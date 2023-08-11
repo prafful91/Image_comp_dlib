@@ -1,0 +1,8 @@
+fastapi
+numpy
+jinja2
+python-multipart
+uvicorn
+cmake
+dlib
+face_recognition
