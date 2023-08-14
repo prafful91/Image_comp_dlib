@@ -4,7 +4,7 @@ import os
 from io import BytesIO
 import face_recognition
 import numpy as np
-
+from datetime import datetime
 from PIL import Image
 from fastapi import FastAPI, Request, Form, UploadFile, File
 from fastapi.templating import Jinja2Templates
@@ -23,9 +23,7 @@ templates = Jinja2Templates(directory="templates")
 # HTML template for displaying images 
 
 @app.get("/")
-async def index():
-    
-        
+async def index():     
     return "Server Running"
 
 
@@ -33,6 +31,9 @@ async def index():
 
 @app.post("/upload/")
 async def upload_images(request: Request, image1: UploadFile = File(...), image2: UploadFile = File(...)):
+
+    start_time = datetime.now()
+
     # Save uploaded images to the 'static' directory
     image1_path = os.path.join("static", image1.filename)
     image2_path = os.path.join("static", image2.filename)
@@ -81,9 +82,6 @@ async def upload_images(request: Request, image1: UploadFile = File(...), image2
     cv2_img1.save(cropped_img1_path)
     cv2_img2.save(cropped_img2_path)
 
-
-
-
     # Convert images to base64 strings for display
     with open(cropped_img1_path, "rb") as f1, open(cropped_img2_path, "rb") as f2:
         image1_base64 = base64.b64encode(f1.read()).decode("utf-8")
@@ -98,6 +96,9 @@ async def upload_images(request: Request, image1: UploadFile = File(...), image2
         if os.path.exists(del_path):
             os.remove(del_path)
 
+    time_diff = datetime.now() - start_time
+    total_seconds = round(time_diff.total_seconds(),1)
+
 
     return templates.TemplateResponse(
         "image_template.html",
@@ -105,7 +106,8 @@ async def upload_images(request: Request, image1: UploadFile = File(...), image2
           "request": request,
           "image1": f"data:image/jpeg;base64,{image1_base64}", 
           "image2": f"data:image/jpeg;base64,{image2_base64}",
-          'result':str(results[0])
+          'result':str(results[0]),
+          'total_seconds':total_seconds
           }
     )
 
